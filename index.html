@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Escape Room: El misterio del laboratorio UEV</title>
+    <!-- Google Fonts estilo Detective / Máquina de escribir -->
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --paper-bg: #d7c49e;
+            --paper-card: #f4ebd0;
+            --paper-border: #8c7355;
+            --text-dark: #2b2318;
+            --accent-yellow: #f5bc3d;
+            --accent-red: #b9382d;
+            --accent-dark: #3e3224;
+            --success: #2e6f40;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #2b2318;
+            color: var(--text-dark);
+            font-family: 'Courier Prime', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 30%, rgba(245, 188, 61, 0.25) 0%, transparent 60%),
+                linear-gradient(rgba(43, 35, 24, 0.85), rgba(43, 35, 24, 0.85)),
+                url('https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&q=80&w=1920');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(43, 35, 24, 0.95);
+            border-bottom: 3px solid var(--paper-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            color: var(--accent-yellow);
+            letter-spacing: 2px;
+        }
+
+        .timer-container {
+            font-family: 'Special Elite', cursive;
+            background: #1a140e;
+            border: 2px dashed var(--accent-yellow);
+            padding: 0.4rem 0.9rem;
+            border-radius: 4px;
+            font-size: 1.2rem;
+            color: var(--accent-yellow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timer-warning {
+            border-color: var(--accent-red) !important;
+            color: var(--accent-red) !important;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        main {
+            flex: 1;
+            padding: clamp(1.5rem, 3vw, 3rem);
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background-color: var(--paper-card);
+            background-image: radial-gradient(rgba(0,0,0,0.03) 1px, transparent 0);
+            background-size: 4px 4px;
+            border: 2px solid var(--paper-border);
+            border-radius: 4px;
+            padding: clamp(1.5rem, 3.5vw, 2.5rem);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 40px rgba(140, 115, 85, 0.15);
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 24px;
+            background: rgba(140, 115, 85, 0.4);
+            border: 1px dashed var(--paper-border);
+        }
+
+        h1, h2, h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-dark);
+            margin-bottom: 1rem;
+        }
+
+        h1 { font-size: clamp(2.2rem, 4.5vw, 3.2rem); color: var(--accent-dark); line-height: 1.1; }
+        h2 { font-size: clamp(1.5rem, 3vw, 2rem); border-bottom: 2px solid var(--paper-border); padding-bottom: 0.5rem; }
+        h3 { font-size: clamp(1.2rem, 2.5vw, 1.5rem); color: #5a4631; }
+
+        p {
+            color: var(--text-dark);
+            line-height: 1.7;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .btn {
+            background: var(--accent-yellow);
+            color: var(--accent-dark);
+            border: 2px solid var(--accent-dark);
+            padding: 0.75rem 1.75rem;
+            font-family: 'Special Elite', cursive;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 3px 3px 0px var(--accent-dark);
+        }
+
+        .btn:hover {
+            background: #f3b01e;
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px var(--accent-dark);
+        }
+
+        .btn:active {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px var(--accent-dark);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #5a4631;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            font-family: 'Special Elite', cursive;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            background: #fffdf5;
+            border: 2px solid var(--paper-border);
+            padding: 0.75rem;
+            color: var(--text-dark);
+            border-radius: 2px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-dark);
+            background: #ffffff;
+            box-shadow: 0 0 8px rgba(62, 50, 36, 0.3);
+        }
+
+        .alert-box {
+            padding: 1rem;
+            border-radius: 2px;
+            margin-bottom: 1.25rem;
+            font-size: 0.95rem;
+            border: 2px dashed;
+        }
+        .alert-error {
+            background: rgba(185, 56, 45, 0.1);
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+        .alert-success {
+            background: rgba(46, 111, 64, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+        .alert-info {
+            background: rgba(245, 188, 61, 0.2);
+            border-color: var(--paper-border);
+            color: var(--accent-dark);
+        }
+
+        .suspect-card {
+            background: #fffef9;
+            border: 2px solid var(--paper-border);
+            border-radius: 2px;
+            padding: 1.25rem;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        @media(max-width: 600px) {
+            header { padding: 0.8rem 1rem; }
+            main { padding: 1rem 0.5rem; }
+            .card { padding: 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <i class="fa-solid fa-fingerprint"></i>
+            <span>UEV ESCAPE ROOM // ORTESIS Y PRÓTESIS</span>
+        </div>
+        <div id="globalTimer" class="timer-container" style="display: none;">
+            <i class="fa-solid fa-stopwatch"></i>
+            <span id="timeDisplay">25:00</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- 1. PANTALLA DE INICIO -->
+        <section id="screen-start" class="screen active">
+            <div class="card" style="text-align: center; max-width: 800px; margin: 0 auto;">
+                <div style="font-size: 3rem; color: var(--accent-dark); margin-bottom: 1rem;">
+                    <i class="fa-solid fa-user-secret"></i>
+                </div>
+                <h1>El misterio del laboratorio de Ortesis y Prótesis</h1>
+                <p style="font-size: 1.1rem; margin-bottom: 2rem; font-family: 'Special Elite', cursive;">
+                    Investigación policial de alta prioridad en las instalaciones universitarias. Demuestra tus conocimientos clínicos para resolver el caso antes de que se agote el tiempo.
+                </p>
+                <button class="btn" onclick="showScreen('screen-story')">
+                    <i class="fa-solid fa-play"></i> Comenzar Investigación
+                </button>
+            </div>
+        </section>
+
+        <!-- 2. INTRODUCCIÓN DE LA HISTORIA -->
+        <section id="screen-story" class="screen">
+            <div class="card" style="max-width: 800px; margin: 0 auto;">
+                <h2>Expediente del Caso // Informe Inicial</h2>
+                <p>
+                    Son las 21:00 horas en la Universidad. El laboratorio de Ortesis y Prótesis de la UEV ha sufrido un robo misterioso. Alguien ha conseguido acceder a las instalaciones y ha robado tres de los prototipos experimentales de órtesis de miembro superior más avanzados del departamento.
+                </p>
+                <p>
+                    Antes de abandonar el laboratorio, el ladrón ha activado un sistema de seguridad digital que ha bloqueado las puertas y ha dejado diferentes pistas cifradas relacionadas con las órtesis, sus características y varios casos clínicos.
+                </p>
+                <p>
+                    La policía ha identificado a cuatro personas que podrían estar relacionadas con el robo, pero todavía no dispone de pruebas suficientes para identificar al culpable.
+                </p>
+                <p>
+                    Vuestra misión será colaborar con la investigación, resolver diferentes retos clínicos y técnicos, recuperar las órtesis desaparecidas y descubrir quién está detrás del robo.
+                </p>
+                <p>
+                    Para conseguirlo, tendréis que superar tres fases:
+                </p>
+                <ul style="list-style-type: disc; padding-left: 20px; color: var(--text-dark); margin-bottom: 1.5rem; line-height: 1.8; font-weight: 700;">
+                    <li><strong>1. El despacho del profesor:</strong> resolver cuatro casos clínicos y seleccionar la órtesis más adecuada para cada paciente.</li>
+                    <li><strong>2. El laboratorio de Ortesis y Prótesis:</strong> completar la tabla por grupos y comprobarla para obtener el código secreto.</li>
+                    <li><strong>3. El diagnóstico del impostor:</strong> interrogar a cuatro sospechosos, analizar sus respuestas y descubrir quién es el ladrón.</li>
+                </ul>
+                <p>
+                    Cada fase os proporcionará un código o una información necesaria para continuar con la investigación. Disponéis de exactamente 25 minutos para resolver el misterio y recuperar los prototipos antes de que llegue el servicio de seguridad. ¿Seréis capaces de descubrir al culpable a tiempo? El reloj ya está en marcha.
+                </p>
+                <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+                    <button class="btn" onclick="startEscapeRoom()">
+                        <i class="fa-solid fa-arrow-right"></i> Entrar al Despacho
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. FASE 1: EL DESPACHO DEL PROFESOR -->
+        <section id="screen-phase1" class="screen">
+            <div class="card">
+                <h2>Fase 1: El Despacho del Profesor</h2>
+                
+                <div class="alert-box alert-info" style="text-align: center;">
+                    <h3 style="color: var(--accent-dark); margin-bottom: 0.5rem;"><i class="fa-solid fa-folder-open"></i> MATERIAL REQUERIDO: ABRIR CARPETA 1</h3>
+                    <p style="margin-bottom: 0;">Examinad inmediatamente los documentos físicos y casos clínicos que se encuentran al <strong>ABRIR LA CARPETA 1</strong> para poder resolver las historias de los pacientes.</p>
+                </div>
+
+                <p>Al entrar en la universidad, encontráis el despacho del profesor completamente desordenado. Sobre su mesa hay cuatro historias clínicas incompletas y un panel de seguridad digital que bloquea el acceso al laboratorio.</p>
+                <p>El profesor había estado trabajando con diferentes pacientes y había dejado anotadas sus características clínicas, pero las respuestas relacionadas con las órtesis han desaparecido. Vuestra misión consiste en analizar los cuatro casos clínicos, identificar la patología o lesión de cada paciente y seleccionar la órtesis más adecuada en la pregunta múltiple.</p>
+                
+                <div class="grid-2">
+                    <!-- Paciente 1 -->
+                    <div class="suspect-card">
+                        <h3>Paciente 1</h3>
+                        <div class="form-group">
+                            <label>1. Patología / Lesión</label>
+                            <input type="text" id="p1_c1_q1" placeholder="Respuesta...">
+                        </div>
+                        <div class="form-group">
+                            <label>2. Objetivo tratamiento</label>
+                            <input type="text" id="p1_c1_q2" placeholder="Respuesta...">
+                        </div>
+                        <div class="form-group">
+                            <label>3. ¿Qué órtesis utilizas?</label>
+                            <select id="p1_c1_q3">
+                                <option value="">-- Selecciona una opción --</option>
+                                <option value="A">A) Ortesis de abducción de hombro con cojín (SO), brazo a 45-60° de abducción</option>
+                                <option value="B">B) Vendaje en ocho</option>
+                                <option value="C">C) Cabestrillo tipo Gilchrist (SO), codo a 90°, brazo pegado al tórax</option>
+                                <option value="D">D) Ortesis funcional de húmero tipo Sarmiento (HO), con hombro y codo libres</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Paciente 2 -->
+                    <div class="suspect-card">
+                        <h3>Paciente 2</h3>
+                        <div class="form-group">
+                            <label>1. Patología / Lesión</label>
+                            <input type="text" id="p1_c2_q1" placeholder="Respuesta...">
+                        </div>
+                        <div class="form-group">
+                            <label>2. Objetivo tratamiento</label>
+                            <input type="text" id="p1_c2_q2" placeholder="Respuesta...">
+                        </div>
+                        <div class="form-group">
+                            <label>3. ¿Qué órtesis utilizas?</label>
+                            <select id="p1_c2_q3">
+                                <option value="">-- Selecciona una opción --</option>
+                                <option value="A">A) Vendaje compresivo en codo</option>
+                                <option value="B">B) Ortesis de codo articulada (EO) con bloqueo de los últimos 30° de extensión</option>
+                                <option value="C">C) Férula de reposo de codo, muñeca y mano (EWHO), codo a 90°, de uso continuo</option>
+                                <option value="D">D) Banda de contrafuerza (counterforce, EO), 2-3 cm bajo el epicóndilo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Paciente 3 -->
+                    <div class="suspect-card">
+                        <h3>Paciente 3</h3>
+                        <div class="form-group">
+                            <label>1. Patología / Lesión</label>
+                            <input type="text" id="p1_c3_q1" placeholder="Respuesta...">
+                        </div>
+                        <div class="form-group">
+                            <label>2. Objetivo tratamiento</label>
+                            <input type="text" id="p1_c3_q2" placeholder="Respuesta...">
+                        </div>
+                        <div class="form-group">
+                            <label>3. ¿Qué órtesis utilizas?</label>
+                            <select id="p1_c3_q3">
+                                <option value="">-- Selecciona una opción --</option>
+                                <option value="A">A) Férula de muñeca en extensión de 30° (cock-up, WHO), de uso diurno</option>
+                                <option value="B">B) Férula de muñeca nocturna (WHO), muñeca en posición neutra (0°)</option>
+                                <option value="C">C) Férula de pulgar en espica (WHO)</option>
+                                <option value="D">D) Vendaje neuromuscular</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Paciente 4 -->
+                    <div class="suspect-card">
+                        <h3>Paciente 4</h3>
+                        <div class="form-group">
+                            <label>1. Patología / Lesión</label>
+                            <input type="text" id="p1_c4_q1" placeholder="Respuesta...">
+                        </div>
+                        <div class="form-group">
+                            <label>2. Objetivo tratamiento</label>
+                            <input type="text" id="p1_c4_q2" placeholder="Respuesta...">
+                        </div>
+                        <div class="form-group">
+                            <label>3. ¿Qué órtesis utilizas?</label>
+                            <select id="p1_c4_q3">
+                                <option value="">-- Selecciona una opción --</option>
+                                <option value="A">A) Férula digital tipo Stack (FO), IFD en extensión, IFP libre</option>
+                                <option value="B">B) Férula en anillo tipo antiboutonnière (FO), IFP en extensión, IFD libre</option>
+                                <option value="C">C) Férula de aluminio dorsal (FO), IFP e IFD en flexión de 30°</option>
+                                <option value="D">D) Sindactilia (buddy taping) con el dedo anular</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; border-top: 2px solid var(--paper-border); padding-top: 1.5rem;">
+                    <h3>Desbloqueo del Laboratorio</h3>
+                    <p>Introducid el código de 4 letras para verificar y abrir las puertas:</p>
+                    <div style="display: flex; gap: 1rem; align-items: center; max-width: 400px; flex-wrap: wrap;">
+                        <input type="text" id="securityCodeInput" placeholder="Código..." style="text-transform: uppercase; font-family: 'Special Elite'; font-size: 1.2rem; text-align: center; flex: 1; min-width: 200px;">
+                        <button class="btn" onclick="validatePhase1()">Verificar</button>
+                    </div>
+                    <div id="phase1Msg" style="margin-top: 1rem;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. FASE 2: EL LABORATORIO DE ORTESIS Y PRÓTESIS -->
+        <section id="screen-phase2" class="screen">
+            <div class="card">
+                <h2>Fase 2: El Laboratorio de Ortesis y Prótesis</h2>
+                
+                <div class="alert-box alert-info" style="text-align: center;">
+                    <h3 style="color: var(--accent-dark); margin-bottom: 0.5rem;"><i class="fa-solid fa-folder-open"></i> MATERIAL REQUERIDO: ABRIR CARPETA 2</h3>
+                    <p style="margin-bottom: 0;">Examinad inmediatamente los documentos físicos y fichas que se encuentran al <strong>ABRIR LA CARPETA 2</strong> para poder consultar el inventario oficial de órtesis.</p>
+                </div>
+
+                <p>Al conseguir abrir la puerta del laboratorio, entráis y encontráis todas las órtesis desordenadas y fuera de su lugar. Los armarios están abiertos, las fichas de inventario aparecen mezcladas y algunas fotografías no coinciden con el material disponible. Todo apunta a que alguien ha entrado en el laboratorio y ha manipulado el material antes de robar órtesis experimentales.</p>
+                <p>Vuestra misión consiste en reorganizar el laboratorio utilizando la nomenclatura ortésica, clasificar correctamente las órtesis y comprobar qué elementos componen el caso.</p>
+                
+                <div class="alert-box alert-info">
+                    <strong>Preguntar tabla a los miembros del grupo:</strong><br>
+                    Discutid y rellenad la tabla conjuntamente con vuestros compañeros de equipo para comprobar los resultados y obtener el código secreto.
+                </div>
+
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label>Validación de la Fase 2</label>
+                    <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">Introducid el código ortésico obtenido:</p>
+                    <div style="display: flex; gap: 1rem; max-width: 400px; flex-wrap: wrap;">
+                        <input type="text" id="phase2CodeInput" placeholder="Código..." style="flex: 1; min-width: 180px; font-family: 'Special Elite';">
+                        <button class="btn" onclick="validatePhase2()">Comprobar</button>
+                    </div>
+                </div>
+                <div id="phase2Msg" style="margin-top: 1rem;"></div>
+            </div>
+        </section>
+
+        <!-- 5. FASE 3: EL INTERROGATORIO -->
+        <section id="screen-phase3" class="screen">
+            <div class="card">
+                <h2>Fase 3: El Diagnóstico del Impostor // Descubre al Ladrón</h2>
+                <p>La policía acaba de llegar al laboratorio y ha identificado a cuatro personas que podrían estar relacionadas con el robo. Tras revisar las instalaciones y comprobar el inventario, se ha confirmado que han desaparecido órtesis experimentales.</p>
+                <p>Los cuatro sospechosos serán interrogados, pero la policía todavía no tiene pruebas suficientes para detener a ninguno. Vuestra misión será descubrir quién ha cometido el robo. Para ello, podréis formular una única pregunta a un solo sospechoso. Tendréis que seleccionar cuidadosamente la pregunta, analizar su respuesta y buscar contradicciones.</p>
+                
+                <div class="alert-box alert-info" style="border-color: var(--accent-dark); color: var(--accent-dark);">
+                    <i class="fa-solid fa-lightbulb"></i> <strong>Pista de la Investigación:</strong> Recordad que los casos de los sospechosos se pueden relacionar directamente con los casos clínicos analizados en la Fase 1. ¡Analizad sus dolencias y antecedentes médicos!
+                </div>
+
+                <div class="grid-2" style="margin-bottom: 2rem;">
+                    <!-- Naïs -->
+                    <div class="suspect-card">
+                        <h3>Naïs</h3>
+                        <p><strong>Edad:</strong> 70 años<br><strong>Ocupación:</strong> Maestra jubilada<br><strong>Lateralidad:</strong> Diestra</p>
+                    </div>
+                    <!-- Eva -->
+                    <div class="suspect-card">
+                        <h3>Eva</h3>
+                        <p><strong>Edad:</strong> 45 años<br><strong>Ocupación:</strong> Fontanera<br><strong>Aficiones:</strong> Pádel (jueves y sábados)</p>
+                    </div>
+                    <!-- Isa -->
+                    <div class="suspect-card">
+                        <h3>Isa</h3>
+                        <p><strong>Edad:</strong> 52 años<br><strong>Ocupación:</strong> Peluquera y salón<br><strong>Lateralidad:</strong> Zurda | Jardinería</p>
+                    </div>
+                    <!-- Théo -->
+                    <div class="suspect-card">
+                        <h3>Théo</h3>
+                        <p><strong>Edad:</strong> 24 años<br><strong>Ocupación:</strong> Est. Ciencias del Deporte<br><strong>Deporte:</strong> Portero de fútbol</p>
+                    </div>
+                </div>
+
+                <div class="card" style="background: #fffdf5;">
+                    <h3>Preguntas disponibles (Elegir solo 1 pregunta para 1 solo sospechoso):</h3>
+                    <ul style="list-style-type: none; padding-left: 0; line-height: 2.2; font-weight: 700;">
+                        <li><i class="fa-solid fa-circle-question" style="color: var(--accent-dark);"></i> ¿Dónde estabas a las 21:00, cuando desaparecieron las órtesis?</li>
+                        <li><i class="fa-solid fa-circle-question" style="color: var(--accent-dark);"></i> ¿Eres diestro o zurdo?</li>
+                        <li><i class="fa-solid fa-circle-question" style="color: var(--accent-dark);"></i> ¿Has estado en el laboratorio esta noche?</li>
+                        <li><i class="fa-solid fa-circle-question" style="color: var(--accent-dark);"></i> ¿Qué objetos llevas contigo en tu mochila, bolso o bolsillos?</li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 2rem; border-top: 2px solid var(--paper-border); padding-top: 1.5rem;">
+                    <h3>Registro de Acusación Final</h3>
+                    <p>Seleccionad al culpable tras contrastar las pistas con las declaraciones:</p>
+                    <div class="form-group" style="max-width: 400px;">
+                        <select id="accusedSelect">
+                            <option value="">-- Seleccionar Suspecto --</option>
+                            <option value="nais">Naïs</option>
+                            <option value="eva">Eva</option>
+                            <option value="isa">Isa</option>
+                            <option value="theo">Théo</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="submitAccusation()">Confirmar Acusación</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. PANTALLA FINAL -->
+        <section id="screen-end" class="screen">
+            <div class="card" style="text-align: center; max-width: 700px; margin: 0 auto; background: #233827; border-color: #2e6f40; color: #fff;">
+                <div style="font-size: 3.5rem; color: #6fcf97; margin-bottom: 1rem;">
+                    <i class="fa-solid fa-shield-check"></i>
+                </div>
+                <h2 style="color: #6fcf97; border-color: #2e6f40;">Acusación Registrada Correctamente</h2>
+                <p style="font-size: 1.15rem; margin-bottom: 2rem; color: #e0f2fe; font-family: 'Special Elite', cursive;">
+                    «Acusación registrada. Comunicad vuestra decisión para conocer el desenlace del caso y comprobar las pruebas físicas en la mochila de utilería».
+                </p>
+                <div class="alert-box alert-success" style="background: rgba(111, 207, 151, 0.2); color: #fff; border-color: #6fcf97;">
+                    El tiempo final de vuestra partida se ha registrado con éxito en el sistema central.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Configuración y Estado Global (25 minutos)
+        let timeRemaining = 25 * 60; 
+        let timerInterval = null;
+        let gameConfig = {
+            phase1Code: "CDBA"
+        };
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function startEscapeRoom() {
+            document.getElementById('globalTimer').style.display = 'flex';
+            startTimer();
+            showScreen('screen-phase1');
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                let mins = Math.floor(timeRemaining / 60);
+                let secs = timeRemaining % 60;
+                document.getElementById('timeDisplay').innerText = 
+                    (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
+
+                if (timeRemaining <= 300) { 
+                    document.getElementById('globalTimer').classList.add('timer-warning');
+                }
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    alert("¡Se ha agotado el tiempo del Escape Room!");
+                    location.reload();
+                }
+            }, 1000);
+        }
+
+        // Validación Fase 1 (Código: CDBA)
+        function validatePhase1() {
+            const inputCode = document.getElementById('securityCodeInput').value.trim().toUpperCase();
+            const msgDiv = document.getElementById('phase1Msg');
+
+            if (inputCode === gameConfig.phase1Code) {
+                msgDiv.innerHTML = `<div class="alert-box alert-success">¡Código correcto! Puerta del laboratorio desbloqueada.</div>`;
+                setTimeout(() => {
+                    showScreen('screen-phase2');
+                }, 1500);
+            } else {
+                msgDiv.innerHTML = `<div class="alert-box alert-error">Código incorrecto. Revisad las respuestas de los casos clínicos.</div>`;
+            }
+        }
+
+        // Validación Fase 2 (Código: WO estática / WOestatica)
+        function validatePhase2() {
+            let inputCode = document.getElementById('phase2CodeInput').value.trim().toUpperCase();
+            inputCode = inputCode.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+            const msgDiv = document.getElementById('phase2Msg');
+
+            if (inputCode === "WOESTATICA") {
+                msgDiv.innerHTML = `<div class="alert-box alert-success">¡Código validado! Acceso concedido a los sospechosos.</div>`;
+                setTimeout(() => {
+                    showScreen('screen-phase3');
+                }, 1500);
+            } else {
+                msgDiv.innerHTML = `<div class="alert-box alert-error">Código incorrecto. Revisad vuestra tabla.</div>`;
+            }
+        }
+
+        // Validación Fase 3
+        function submitAccusation() {
+            const suspect = document.getElementById('accusedSelect').value;
+            if (!suspect) {
+                alert("Por favor, selecciona un sospechoso antes de confirmar la acusación.");
+                return;
+            }
+            showScreen('screen-end');
+        }
+    </script>
+</body>
+</html>
